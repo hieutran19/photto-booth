@@ -1,68 +1,61 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+
+import CameraPreview from "./CameraPreview";
+import CountdownOverlay from "./CountdownOverlay";
+import PhotoGallery from "./PhotoGallery";
+
+import { useCamera } from "../hooks/useCamera";
+import { capturePhoto } from "../utils/capturePhoto";
+import { sleep } from "../utils/sleep";
 
 export default function Camera() {
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const { videoRef } = useCamera();
 
     const [photos, setPhotos] = useState<string[]>([]);
+    const [countdown, setCountdown] = useState<number | null>(null);
+    const [isCapturing, setIsCapturing] = useState(false);
 
-    useEffect(() => {
-        const startCamera = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false,
-                });
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (error) {
-                console.error("Cannot access camera:", error);
-            }
-        };
-
-        startCamera();
-
-        return () => {
-            const stream = videoRef.current?.srcObject as MediaStream | null;
-
-            stream?.getTracks().forEach((track) => track.stop());
-        };
-    }, []);
-
-    const capturePhoto = () => {
-        if (photos.length >= 4) {
-            return;
+    const startCountdown = async () => {
+        for (let i = 3; i > 0; i--) {
+            setCountdown(i);
+            await sleep(1000);
         }
 
-        const video = videoRef.current;
+        setCountdown(null);
+    };
 
-        if (!video) return;
+    const startPhotoSession = async () => {
+        if (!videoRef.current) return;
 
-        const canvas = document.createElement("canvas");
+        setPhotos([]);
+        setIsCapturing(true);
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        try {
+            for (let i = 0; i < 4; i++) {
+                await startCountdown();
 
-        const ctx = canvas.getContext("2d");
+                const image = capturePhoto(
+                    videoRef.current
+                );
 
-        if (!ctx) return;
+                if (image) {
+                    setPhotos((prev) => [
+                        ...prev,
+                        image,
+                    ]);
+                }
 
-        ctx.drawImage(
-            video,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        const image = canvas.toDataURL("image/png");
-
-        setPhotos((prev) => [...prev, image]);
+                await sleep(500);
+            }
+        } finally {
+            setIsCapturing(false);
+        }
     };
 
     const resetPhotos = () => {
         setPhotos([]);
+        setCountdown(null);
+        setIsCapturing(false);
     };
 
     return (
@@ -71,25 +64,23 @@ export default function Camera() {
                 width: "100%",
                 maxWidth: "1200px",
                 margin: "0 auto",
-                padding: "16px",
+                padding: 16,
                 boxSizing: "border-box",
             }}
         >
-            <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
+            <div
                 style={{
+                    position: "relative",
                     width: "100%",
                     maxWidth: "800px",
-                    aspectRatio: "4 / 3",
-                    objectFit: "cover",
-                    borderRadius: "12px",
-                    border: "1px solid #ddd",
-                    display: "block",
                 }}
-            />
+            >
+                <CameraPreview videoRef={videoRef} />
+
+                <CountdownOverlay
+                    countdown={countdown}
+                />
+            </div>
 
             <div
                 style={{
@@ -100,63 +91,37 @@ export default function Camera() {
                 }}
             >
                 <button
-                    onClick={capturePhoto}
-                    disabled={photos.length >= 4}
+                    onClick={startPhotoSession}
+                    disabled={isCapturing}
                     style={{
                         padding: "12px 20px",
-                        minWidth: "140px",
-                        cursor: "pointer",
+                        minWidth: 160,
+                        cursor: isCapturing
+                            ? "not-allowed"
+                            : "pointer",
                     }}
                 >
-                    Take Photo ({photos.length}/4)
+                    {isCapturing
+                        ? "Capturing..."
+                        : "Start Session"}
                 </button>
 
                 <button
                     onClick={resetPhotos}
+                    disabled={isCapturing}
                     style={{
                         padding: "12px 20px",
-                        minWidth: "140px",
-                        cursor: "pointer",
+                        minWidth: 120,
+                        cursor: isCapturing
+                            ? "not-allowed"
+                            : "pointer",
                     }}
                 >
                     Reset
                 </button>
             </div>
 
-            {photos.length > 0 && (
-                <>
-                    <h3
-                        style={{
-                            marginTop: 24,
-                        }}
-                    >
-                        Captured Photos
-                    </h3>
-
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 12,
-                            overflowX: "auto",
-                            paddingBottom: 8,
-                        }}
-                    >
-                        {photos.map((photo, index) => (
-                            <img
-                                key={index}
-                                src={photo}
-                                alt={`photo-${index + 1}`}
-                                style={{
-                                    width: 120,
-                                    flexShrink: 0,
-                                    borderRadius: 12,
-                                    border: "1px solid #ddd",
-                                }}
-                            />
-                        ))}
-                    </div>
-                </>
-            )}
+            <PhotoGallery photos={photos} />
         </div>
     );
 }
