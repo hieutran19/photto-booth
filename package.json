@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cloudinary": "^2.10.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-draggable": "^4.7.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

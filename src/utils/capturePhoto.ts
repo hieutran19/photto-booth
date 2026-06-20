@@ -1,5 +1,6 @@
 export const capturePhoto = (
-    video: HTMLVideoElement
+    video: HTMLVideoElement,
+    filter: "none" | "grayscale" | "sepia" = "none"
 ) => {
     const canvas = document.createElement("canvas");
 
@@ -7,19 +8,17 @@ export const capturePhoto = (
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return null;
 
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
+    if (filter === "grayscale") {
+        ctx.filter = "grayscale(1)";
+    } else if (filter === "sepia") {
+        ctx.filter = "sepia(1)";
+    } else {
+        ctx.filter = "none";
+    }
 
-    ctx.drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    ctx.drawImage(video, 0, 0);
 
     return canvas.toDataURL("image/png");
 };

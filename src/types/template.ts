@@ -1,0 +1,1 @@
+export type PhotoTemplate = "classic" | "dark" | "polaroid";

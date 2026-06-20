@@ -1,10 +1,7 @@
-interface Props {
-    videoRef: React.RefObject<HTMLVideoElement | null>;
-}
-
 export default function CameraPreview({
     videoRef,
-}: Props) {
+    filter = "none",
+}: any) {
     return (
         <video
             ref={videoRef}
@@ -16,6 +13,12 @@ export default function CameraPreview({
                 aspectRatio: "4/3",
                 objectFit: "cover",
                 transform: "scaleX(-1)",
+                filter:
+                    filter === "grayscale"
+                        ? "grayscale(1)"
+                        : filter === "sepia"
+                            ? "sepia(1)"
+                            : "none",
                 borderRadius: 12,
             }}
         />
