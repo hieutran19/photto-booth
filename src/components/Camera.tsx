@@ -8,54 +8,69 @@ import ActionButtons from "./ActionButtons";
 
 import { useCamera } from "../hooks/useCamera";
 import { capturePhoto } from "../utils/capturePhoto";
-import { generatePhotoStrip } from "../utils/generatePhotoStrip";
+import { generatePhotoLayout } from "../utils/generatePhotoLayout";
 import { uploadToCloudinary } from "../utils/cloudinary";
 
 import type { PhotoTemplate } from "../types/template";
+import type { PhotoLayout } from "../types/layout";
 
 export default function Camera() {
     const { videoRef } = useCamera();
 
-    // photos
     const [photos, setPhotos] = useState<string[]>([]);
     const [photoStrip, setPhotoStrip] = useState("");
 
-    // ui states
-    const [countdown, setCountdown] = useState<number | null>(null);
-    const [isCapturing, setIsCapturing] = useState(false);
-    const [isFlashing, setIsFlashing] = useState(false);
+    const [countdown, setCountdown] =
+        useState<number | null>(null);
 
-    // feature states
+    const [isCapturing, setIsCapturing] =
+        useState(false);
+
+    const [isFlashing, setIsFlashing] =
+        useState(false);
+
     const [template, setTemplate] =
         useState<PhotoTemplate>("classic");
-    const [text, setText] = useState("My Memories 💖");
+
+    const [layout, setLayout] =
+        useState<PhotoLayout>("strip");
+
+    const [text, setText] =
+        useState("My Memories 💖");
+
     const [filter, setFilter] = useState<
         "none" | "grayscale" | "sepia"
     >("none");
 
-    // share states
-    const [shareUrl, setShareUrl] = useState("");
-    const [isUploading, setIsUploading] = useState(false);
+    const [shareUrl, setShareUrl] =
+        useState("");
 
-    // utils
-    const sleepFn = (ms: number) =>
-        new Promise((r) => setTimeout(r, ms));
+    const [isUploading, setIsUploading] =
+        useState(false);
+
+    const sleep = (ms: number) =>
+        new Promise((resolve) =>
+            setTimeout(resolve, ms)
+        );
 
     const startCountdown = async () => {
         for (let i = 3; i > 0; i--) {
             setCountdown(i);
-            await sleepFn(1000);
+
+            await sleep(1000);
         }
+
         setCountdown(null);
     };
 
     const triggerFlash = async () => {
         setIsFlashing(true);
-        await sleepFn(150);
+
+        await sleep(150);
+
         setIsFlashing(false);
     };
 
-    // capture session
     const startPhotoSession = async () => {
         if (!videoRef.current) return;
 
@@ -70,6 +85,7 @@ export default function Camera() {
         try {
             for (let i = 0; i < 4; i++) {
                 await startCountdown();
+
                 await triggerFlash();
 
                 const image = capturePhoto(
@@ -79,19 +95,25 @@ export default function Camera() {
 
                 if (image) {
                     captured.push(image);
-                    setPhotos((p) => [...p, image]);
+
+                    setPhotos((prev) => [
+                        ...prev,
+                        image,
+                    ]);
                 }
 
-                await sleepFn(500);
+                await sleep(500);
             }
 
-            const strip = await generatePhotoStrip(
-                captured,
-                template,
-                text
-            );
+            const result =
+                await generatePhotoLayout(
+                    captured,
+                    template,
+                    layout,
+                    text
+                );
 
-            setPhotoStrip(strip);
+            setPhotoStrip(result);
         } finally {
             setIsCapturing(false);
             setCountdown(null);
@@ -108,25 +130,36 @@ export default function Camera() {
         setIsFlashing(false);
     };
 
-    // download
     const download = () => {
         if (!photoStrip) return;
 
-        const a = document.createElement("a");
-        a.href = photoStrip;
-        a.download = `photo-booth-${Date.now()}.png`;
-        a.click();
+        const link =
+            document.createElement("a");
+
+        link.href = photoStrip;
+
+        link.download = `photo-booth-${Date.now()}.png`;
+
+        link.click();
     };
 
-    // cloud upload
     const handleShare = async () => {
         if (!photoStrip) return;
 
-        setIsUploading(true);
-
         try {
-            const url = await uploadToCloudinary(photoStrip);
+            setIsUploading(true);
+
+            const url =
+                await uploadToCloudinary(
+                    photoStrip
+                );
+
             setShareUrl(url);
+        } catch (error) {
+            console.error(
+                "Upload failed:",
+                error
+            );
         } finally {
             setIsUploading(false);
         }
@@ -140,60 +173,123 @@ export default function Camera() {
                 padding: 16,
             }}
         >
-            {/* CAMERA */}
-            <div style={{ position: "relative", maxWidth: 800 }}>
+            <div
+                style={{
+                    position: "relative",
+                    maxWidth: 800,
+                }}
+            >
                 <CameraPreview
                     videoRef={videoRef}
                     filter={filter}
                 />
 
-                <FlashOverlay isVisible={isFlashing} />
+                <FlashOverlay
+                    isVisible={isFlashing}
+                />
 
-                <CountdownOverlay countdown={countdown} />
+                <CountdownOverlay
+                    countdown={countdown}
+                />
             </div>
 
-            {/* CONTROLS */}
-            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div
+                style={{
+                    marginTop: 16,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                }}
+            >
                 <select
                     value={template}
                     onChange={(e) =>
                         setTemplate(
-                            e.target.value as PhotoTemplate
+                            e.target
+                                .value as PhotoTemplate
                         )
                     }
                 >
-                    <option value="classic">Classic</option>
-                    <option value="dark">Dark</option>
-                    <option value="polaroid">Polaroid</option>
+                    <option value="classic">
+                        Classic
+                    </option>
+
+                    <option value="dark">
+                        Dark
+                    </option>
+
+                    <option value="polaroid">
+                        Polaroid
+                    </option>
                 </select>
 
-                <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="Text..."
-                />
+                <select
+                    value={layout}
+                    onChange={(e) =>
+                        setLayout(
+                            e.target
+                                .value as PhotoLayout
+                        )
+                    }
+                >
+                    <option value="strip">
+                        Strip
+                    </option>
+
+                    <option value="grid">
+                        Grid 2x2
+                    </option>
+                </select>
 
                 <select
                     value={filter}
                     onChange={(e) =>
-                        setFilter(e.target.value as any)
+                        setFilter(
+                            e.target.value as
+                            | "none"
+                            | "grayscale"
+                            | "sepia"
+                        )
                     }
                 >
-                    <option value="none">Normal</option>
-                    <option value="grayscale">B&W</option>
-                    <option value="sepia">Vintage</option>
+                    <option value="none">
+                        Normal
+                    </option>
+
+                    <option value="grayscale">
+                        B&W
+                    </option>
+
+                    <option value="sepia">
+                        Vintage
+                    </option>
                 </select>
+
+                <input
+                    value={text}
+                    onChange={(e) =>
+                        setText(
+                            e.target.value
+                        )
+                    }
+                    placeholder="Custom text..."
+                />
             </div>
 
-            {/* ACTION BUTTONS */}
             <ActionButtons
                 isCapturing={isCapturing}
                 onStart={startPhotoSession}
                 onReset={resetAll}
             />
 
-            {/* DOWNLOAD + SHARE */}
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <div
+                style={{
+                    marginTop: 16,
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                }}
+            >
                 <button
                     onClick={download}
                     disabled={!photoStrip}
@@ -203,16 +299,24 @@ export default function Camera() {
 
                 <button
                     onClick={handleShare}
-                    disabled={!photoStrip || isUploading}
+                    disabled={
+                        !photoStrip ||
+                        isUploading
+                    }
                 >
-                    {isUploading ? "Uploading..." : "Share"}
+                    {isUploading
+                        ? "Uploading..."
+                        : "Share"}
                 </button>
             </div>
 
-            {/* SHARE RESULT */}
             {shareUrl && (
-                <div style={{ marginTop: 12 }}>
-                    <p>Share Link:</p>
+                <div
+                    style={{
+                        marginTop: 16,
+                    }}
+                >
+                    <p>Share Link</p>
 
                     <a
                         href={shareUrl}
@@ -228,25 +332,38 @@ export default function Camera() {
                                 shareUrl
                             )
                         }
+                        style={{
+                            marginLeft: 8,
+                        }}
                     >
                         Copy
                     </button>
                 </div>
             )}
 
-            {/* GALLERY */}
             <PhotoGallery photos={photos} />
 
-            {/* STRIP PREVIEW */}
             {photoStrip && (
-                <div style={{ marginTop: 20 }}>
-                    <h3>Photo Strip</h3>
+                <div
+                    style={{
+                        marginTop: 24,
+                    }}
+                >
+                    <h3>
+                        {layout === "strip"
+                            ? "Photo Strip"
+                            : "Photo Grid"}
+                    </h3>
 
                     <img
                         src={photoStrip}
+                        alt="result"
                         style={{
                             width: 320,
+                            maxWidth: "100%",
                             borderRadius: 12,
+                            border:
+                                "1px solid #ddd",
                         }}
                     />
                 </div>
