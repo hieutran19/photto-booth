@@ -8,7 +8,6 @@ import ActionButtons from "./ActionButtons";
 
 import { useCamera } from "../hooks/useCamera";
 import { capturePhoto } from "../utils/capturePhoto";
-import { sleep } from "../utils/sleep";
 import { generatePhotoStrip } from "../utils/generatePhotoStrip";
 import { uploadToCloudinary } from "../utils/cloudinary";
 
