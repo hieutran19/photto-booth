@@ -97,6 +97,11 @@ const generateStrip = async (
         height - 30 * scale
     );
 
+    if (cfg.frameSrc) {
+        const frame = await loadImage(cfg.frameSrc);
+        ctx.drawImage(frame, 0, 0, W, height);
+    }
+
     return canvas.toDataURL("image/png");
 };
 
@@ -188,6 +193,11 @@ const generateGrid = async (
         width / 2,
         height - 50 * scale
     );
+
+    if (cfg.frameSrc) {
+        const frame = await loadImage(cfg.frameSrc);
+        ctx.drawImage(frame, 0, 0, width, height);
+    }
 
     return canvas.toDataURL("image/png");
 };

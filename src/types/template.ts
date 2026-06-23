@@ -1,1 +1,6 @@
-export type PhotoTemplate = "classic" | "dark" | "polaroid";
+export type PhotoTemplate =
+    | "classic"
+    | "dark"
+    | "polaroid"
+    | "newspaper"
+    | "parkbogum";

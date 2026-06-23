@@ -10,6 +10,7 @@ import { useCamera } from "../hooks/useCamera";
 import { capturePhoto } from "../utils/capturePhoto";
 import { generatePhotoLayout } from "../utils/generatePhotoLayout";
 import { uploadToCloudinary } from "../utils/cloudinary";
+import { templates } from "../utils/templates";
 
 import type { PhotoTemplate } from "../types/template";
 import type { PhotoLayout } from "../types/layout";
@@ -182,7 +183,23 @@ export default function Camera() {
                 <CameraPreview
                     videoRef={videoRef}
                     filter={filter}
+                    maskSlots={templates[template]?.previewSlots}
                 />
+
+                {templates[template]?.frameSrc ? (
+                    <img
+                        src={templates[template].frameSrc}
+                        alt={`${template} frame`}
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            pointerEvents: "none",
+                        }}
+                    />
+                ) : null}
 
                 <FlashOverlay
                     isVisible={isFlashing}
@@ -220,6 +237,14 @@ export default function Camera() {
 
                     <option value="polaroid">
                         Polaroid
+                    </option>
+
+                    <option value="newspaper">
+                        NewsPaper
+                    </option>
+
+                    <option value="parkbogum">
+                        ParkBoGum
                     </option>
                 </select>
 
