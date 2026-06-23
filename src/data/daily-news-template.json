@@ -1,0 +1,66 @@
+{
+  "templateId": "daily-news",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "imageMode": "cover",
+  "slots": [
+    {
+      "id": "slot1",
+      "shot": 1,
+      "frame": {
+        "x": 60,
+        "y": 180,
+        "width": 960,
+        "height": 420
+      },
+      "scale": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "rotation": 0
+    },
+    {
+      "id": "slot2",
+      "shot": 2,
+      "frame": {
+        "x": 60,
+        "y": 630,
+        "width": 960,
+        "height": 420
+      },
+      "scale": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "rotation": 0
+    },
+    {
+      "id": "slot3",
+      "shot": 3,
+      "frame": {
+        "x": 60,
+        "y": 1080,
+        "width": 960,
+        "height": 420
+      },
+      "scale": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "rotation": 0
+    },
+    {
+      "id": "slot4",
+      "shot": 4,
+      "frame": {
+        "x": 60,
+        "y": 1530,
+        "width": 960,
+        "height": 420
+      },
+      "scale": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "rotation": 0
+    }
+  ]
+}
