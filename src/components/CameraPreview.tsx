@@ -1,8 +1,11 @@
-﻿export default function CameraPreview({
+﻿import React from "react";
+
+export default function CameraPreview({
     videoRef,
     filter = "none",
     maskSlots,
 }: any) {
+
     return (
         <div
             style={{
@@ -14,26 +17,6 @@
                 background: "#000",
             }}
         >
-            <svg
-                width="0"
-                height="0"
-                style={{ position: "absolute" }}
-            >
-                <defs>
-                    <clipPath id="camera-mask" clipPathUnits="objectBoundingBox">
-                        {maskSlots?.map((slot: any, index: number) => (
-                            <rect
-                                key={index}
-                                x={slot.x}
-                                y={slot.y}
-                                width={slot.width}
-                                height={slot.height}
-                            />
-                        ))}
-                    </clipPath>
-                </defs>
-            </svg>
-
             <video
                 ref={videoRef}
                 autoPlay
@@ -50,8 +33,6 @@
                             : filter === "sepia"
                                 ? "sepia(1)"
                                 : "none",
-                    clipPath: maskSlots ? "url(#camera-mask)" : undefined,
-                    WebkitClipPath: maskSlots ? "url(#camera-mask)" : undefined,
                 }}
             />
         </div>

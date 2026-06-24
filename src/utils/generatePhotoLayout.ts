@@ -1,4 +1,6 @@
 import { templates } from "./templates";
+import { templateLayouts } from "../data/template-layouts";
+import { drawCroppedImage } from "./cropPhoto";
 
 import type { PhotoTemplate } from "../types/template";
 import type { PhotoLayout } from "../types/layout";
@@ -34,30 +36,15 @@ const generateStrip = async (
     scale: number
 ) => {
     const cfg = templates[template];
+    const layout = templateLayouts[template];
 
-    const width = 800;
-    const photoHeight = 500;
-    const gap = 24;
-    const padding = 24;
-    const headerHeight = 120;
-
-    const W = width * scale;
-    const PH = photoHeight * scale;
-    const GAP = gap * scale;
-    const PAD = padding * scale;
-    const HH = headerHeight * scale;
-
-    const height =
-        HH +
-        PAD * 2 +
-        photos.length * PH +
-        (photos.length - 1) * GAP +
-        100 * scale;
+    // Apply scale to all dimensions
+    const W = layout.frame.width * scale;
+    const H = layout.frame.height * scale;
 
     const canvas = document.createElement("canvas");
-
     canvas.width = W;
-    canvas.height = height;
+    canvas.height = H;
 
     const ctx = canvas.getContext("2d");
 
@@ -65,41 +52,40 @@ const generateStrip = async (
         throw new Error("No canvas context");
     }
 
+    // Draw background
     ctx.fillStyle = cfg.bg;
-    ctx.fillRect(0, 0, W, height);
+    ctx.fillRect(0, 0, W, H);
 
+    // Draw title
     ctx.fillStyle = cfg.text;
     ctx.font = `bold ${42 * scale}px Arial`;
     ctx.textAlign = "center";
     ctx.fillText(cfg.title, W / 2, 80 * scale);
 
-    let y = HH;
-
-    for (const photo of photos) {
+    // Draw photos in their designated slots
+    for (let i = 0; i < Math.min(photos.length, layout.slots.length); i++) {
+        const photo = photos[i];
+        const slot = layout.slots[i];
         const img = await loadImage(photo);
 
-        ctx.drawImage(
-            img,
-            PAD,
-            y,
-            W - PAD * 2,
-            PH
-        );
+        const slotX = slot.x * scale;
+        const slotY = slot.y * scale;
+        const slotW = slot.width * scale;
+        const slotH = slot.height * scale;
 
-        y += PH + GAP;
+        // Use cropped image to fill slot completely with centered subject
+        drawCroppedImage(ctx, img, slotX, slotY, slotW, slotH);
     }
 
+    // Draw text at bottom
     ctx.fillStyle = cfg.text;
     ctx.font = `bold ${28 * scale}px Arial`;
-    ctx.fillText(
-        text,
-        W / 2,
-        height - 30 * scale
-    );
+    ctx.fillText(text, W / 2, H - 30 * scale);
 
+    // Draw frame overlay on top
     if (cfg.frameSrc) {
         const frame = await loadImage(cfg.frameSrc);
-        ctx.drawImage(frame, 0, 0, W, height);
+        ctx.drawImage(frame, 0, 0, W, H);
     }
 
     return canvas.toDataURL("image/png");
@@ -112,17 +98,15 @@ const generateGrid = async (
     scale: number
 ) => {
     const cfg = templates[template];
+    const layout = templateLayouts[template];
 
-    const width = 1000 * scale;
-    const height = 1300 * scale;
-
-    const padding = 30 * scale;
-    const gap = 20 * scale;
+    // Apply scale to all dimensions
+    const W = layout.frame.width * scale;
+    const H = layout.frame.height * scale;
 
     const canvas = document.createElement("canvas");
-
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = W;
+    canvas.height = H;
 
     const ctx = canvas.getContext("2d");
 
@@ -130,73 +114,40 @@ const generateGrid = async (
         throw new Error("No canvas context");
     }
 
+    // Draw background
     ctx.fillStyle = cfg.bg;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, W, H);
 
+    // Draw title
     ctx.fillStyle = cfg.text;
     ctx.font = `bold ${42 * scale}px Arial`;
     ctx.textAlign = "center";
+    ctx.fillText(cfg.title, W / 2, 80 * scale);
 
-    ctx.fillText(
-        cfg.title,
-        width / 2,
-        80 * scale
-    );
+    // Draw photos in their designated slots
+    for (let i = 0; i < Math.min(photos.length, layout.slots.length); i++) {
+        const photo = photos[i];
+        const slot = layout.slots[i];
+        const img = await loadImage(photo);
 
-    const photoWidth =
-        (width - padding * 2 - gap) / 2;
+        const slotX = slot.x * scale;
+        const slotY = slot.y * scale;
+        const slotW = slot.width * scale;
+        const slotH = slot.height * scale;
 
-    const photoHeight = 450 * scale;
-
-    const positions = [
-        {
-            x: padding,
-            y: 150 * scale,
-        },
-        {
-            x: padding + photoWidth + gap,
-            y: 150 * scale,
-        },
-        {
-            x: padding,
-            y: 150 * scale + photoHeight + gap,
-        },
-        {
-            x: padding + photoWidth + gap,
-            y: 150 * scale + photoHeight + gap,
-        },
-    ];
-
-    for (
-        let i = 0;
-        i < Math.min(photos.length, 4);
-        i++
-    ) {
-        const img = await loadImage(
-            photos[i]
-        );
-
-        ctx.drawImage(
-            img,
-            positions[i].x,
-            positions[i].y,
-            photoWidth,
-            photoHeight
-        );
+        // Use cropped image to fill slot completely with centered subject
+        drawCroppedImage(ctx, img, slotX, slotY, slotW, slotH);
     }
 
+    // Draw text at bottom
     ctx.fillStyle = cfg.text;
     ctx.font = `bold ${28 * scale}px Arial`;
+    ctx.fillText(text, W / 2, H - 50 * scale);
 
-    ctx.fillText(
-        text,
-        width / 2,
-        height - 50 * scale
-    );
-
+    // Draw frame overlay on top
     if (cfg.frameSrc) {
         const frame = await loadImage(cfg.frameSrc);
-        ctx.drawImage(frame, 0, 0, width, height);
+        ctx.drawImage(frame, 0, 0, W, H);
     }
 
     return canvas.toDataURL("image/png");
