@@ -1,17 +1,30 @@
 ﻿import React from "react";
 
+import type { PreviewSlot } from "../types/template";
+
+type Props = {
+    videoRef: React.RefObject<HTMLVideoElement | null>;
+    filter?: "none" | "grayscale" | "sepia";
+    slots?: PreviewSlot[];
+
+    // Thêm mới
+    aspectRatio?: string;
+    objectFit?: "contain" | "cover";
+};
+
 export default function CameraPreview({
     videoRef,
     filter = "none",
-    maskSlots,
-}: any) {
-
+    slots,
+    aspectRatio = "9 / 16",
+    objectFit = "contain",
+}: Props) {
     return (
         <div
             style={{
                 position: "relative",
                 width: "100%",
-                aspectRatio: "4/3",
+                aspectRatio,
                 overflow: "hidden",
                 borderRadius: 12,
                 background: "#000",
@@ -23,9 +36,11 @@ export default function CameraPreview({
                 playsInline
                 muted
                 style={{
+                    position: "absolute",
+                    inset: 0,
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
+                    objectFit,
                     transform: "scaleX(-1)",
                     filter:
                         filter === "grayscale"
@@ -35,6 +50,24 @@ export default function CameraPreview({
                                 : "none",
                 }}
             />
+
+            {slots?.map((slot, index) => (
+                <div
+                    key={`${slot.x}-${slot.y}-${index}`}
+                    style={{
+                        position: "absolute",
+                        left: slot.left ?? `${slot.x * 100}%`,
+                        top: slot.top ?? `${slot.y * 100}%`,
+                        width: slot.slotWidth ?? `${slot.width * 100}%`,
+                        height: slot.slotHeight ?? `${slot.height * 100}%`,
+                        border: "2px solid rgba(255,255,255,0.95)",
+                        borderRadius: 8,
+                        boxSizing: "border-box",
+                        pointerEvents: "none",
+                        background: "rgba(255,255,255,0.08)",
+                    }}
+                />
+            ))}
         </div>
     );
 }

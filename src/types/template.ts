@@ -22,3 +22,22 @@ export interface TemplateLayout {
     };
     slots: PhotoSlot[];
 }
+
+export interface FrameOverlayStyle {
+    top?: number | string;
+    left?: number | string;
+    width?: number | string;
+    height?: number | string;
+    objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+}
+
+export interface PreviewSlot {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    top?: number | string;
+    left?: number | string;
+    slotWidth?: number | string;
+    slotHeight?: number | string;
+}

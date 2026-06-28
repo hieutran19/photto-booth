@@ -5,6 +5,7 @@ import CountdownOverlay from "./CountdownOverlay";
 import FlashOverlay from "./FlashOverlay";
 import PhotoGallery from "./PhotoGallery";
 import ActionButtons from "./ActionButtons";
+import PhotoStripPreview from "./PhotoStripPreview";
 
 import { useCamera } from "../hooks/useCamera";
 import { capturePhoto } from "../utils/capturePhoto";
@@ -49,6 +50,9 @@ export default function Camera() {
     const [isUploading, setIsUploading] =
         useState(false);
 
+    const [activeFrameOverlayIndex, setActiveFrameOverlayIndex] =
+        useState(0);
+
     const sleep = (ms: number) =>
         new Promise((resolve) =>
             setTimeout(resolve, ms)
@@ -78,6 +82,7 @@ export default function Camera() {
         setPhotos([]);
         setPhotoStrip("");
         setShareUrl("");
+        setActiveFrameOverlayIndex(0);
 
         setIsCapturing(true);
 
@@ -85,6 +90,8 @@ export default function Camera() {
 
         try {
             for (let i = 0; i < 4; i++) {
+                setActiveFrameOverlayIndex(i);
+
                 await startCountdown();
 
                 await triggerFlash();
@@ -129,6 +136,7 @@ export default function Camera() {
         setCountdown(null);
         setIsCapturing(false);
         setIsFlashing(false);
+        setActiveFrameOverlayIndex(0);
     };
 
     const download = () => {
@@ -166,6 +174,14 @@ export default function Camera() {
         }
     };
 
+    const currentTemplate = templates[template];
+    const frameOverlays = Array.isArray(currentTemplate?.frameOverlay)
+        ? currentTemplate.frameOverlay
+        : currentTemplate?.frameOverlay
+            ? [currentTemplate.frameOverlay]
+            : [];
+    const activeFrameOverlay = frameOverlays[Math.min(activeFrameOverlayIndex, frameOverlays.length - 1)];
+
     return (
         <div
             style={{
@@ -178,24 +194,28 @@ export default function Camera() {
                 style={{
                     position: "relative",
                     maxWidth: 800,
+                    overflow: "hidden",
                 }}
             >
                 <CameraPreview
                     videoRef={videoRef}
                     filter={filter}
-                    maskSlots={templates[template]?.previewSlots}
+                    slots={templates[template]?.slots}
+                    aspectRatio={templates[template]?.aspectRatio ?? "9 / 16"}
+                    objectFit="contain"
                 />
 
-                {templates[template]?.frameSrc ? (
+                {currentTemplate?.frameSrc && activeFrameOverlay ? (
                     <img
-                        src={templates[template].frameSrc}
+                        src={currentTemplate.frameSrc}
                         alt={`${template} frame`}
                         style={{
                             position: "absolute",
-                            inset: 0,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
+                            top: activeFrameOverlay.top ?? "0%",
+                            left: activeFrameOverlay.left ?? "0%",
+                            width: activeFrameOverlay.width ?? "100%",
+                            height: activeFrameOverlay.height ?? "100%",
+                            objectFit: activeFrameOverlay.objectFit ?? "cover",
                             pointerEvents: "none",
                         }}
                     />
@@ -307,92 +327,19 @@ export default function Camera() {
                 onReset={resetAll}
             />
 
-            <div
-                style={{
-                    marginTop: 16,
-                    display: "flex",
-                    gap: 8,
-                    flexWrap: "wrap",
-                }}
-            >
-                <button
-                    onClick={download}
-                    disabled={!photoStrip}
-                >
-                    Download
-                </button>
-
-                <button
-                    onClick={handleShare}
-                    disabled={
-                        !photoStrip ||
-                        isUploading
-                    }
-                >
-                    {isUploading
-                        ? "Uploading..."
-                        : "Share"}
-                </button>
-            </div>
-
-            {shareUrl && (
-                <div
-                    style={{
-                        marginTop: 16,
-                    }}
-                >
-                    <p>Share Link</p>
-
-                    <a
-                        href={shareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Open Image
-                    </a>
-
-                    <button
-                        onClick={() =>
-                            navigator.clipboard.writeText(
-                                shareUrl
-                            )
-                        }
-                        style={{
-                            marginLeft: 8,
-                        }}
-                    >
-                        Copy
-                    </button>
-                </div>
-            )}
-
             <PhotoGallery photos={photos} />
 
-            {photoStrip && (
-                <div
-                    style={{
-                        marginTop: 24,
-                    }}
-                >
-                    <h3>
-                        {layout === "strip"
-                            ? "Photo Strip"
-                            : "Photo Grid"}
-                    </h3>
-
-                    <img
-                        src={photoStrip}
-                        alt="result"
-                        style={{
-                            width: 320,
-                            maxWidth: "100%",
-                            borderRadius: 12,
-                            border:
-                                "1px solid #ddd",
-                        }}
-                    />
-                </div>
-            )}
+            <PhotoStripPreview
+                photoStrip={photoStrip}
+                layout={layout}
+                shareUrl={shareUrl}
+                isUploading={isUploading}
+                onDownload={download}
+                onShare={handleShare}
+                onCopyShareUrl={() =>
+                    navigator.clipboard.writeText(shareUrl)
+                }
+            />
         </div>
     );
 }
