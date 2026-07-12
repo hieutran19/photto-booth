@@ -7,6 +7,10 @@ export const templates: Record<
         text: string;
         aspectRatio?: string;
         title: string;
+        frame?: {
+            width: number;
+            height: number;
+        };
         frameSrc?: string;
         frameOverlay?: FrameOverlayStyle | FrameOverlayStyle[];
         slots?: PreviewSlot[];
@@ -17,18 +21,25 @@ export const templates: Record<
         aspectRatio: "9 / 16",
         text: "#111111",
         title: "PHOTO BOOTH",
-
+        frame: { width: 900, height: 2700 },
+        slots: [
+            { x: 10, y: 200, width: 750, height: 460 },
+            { x: 120, y: 720, width: 750, height: 560 },
+            { x: 40, y: 1360, width: 820, height: 560 },
+            { x: 40, y: 2000, width: 820, height: 560 },
+        ],
     },
     dark: {
         bg: "#111111",
         text: "#ffffff",
         aspectRatio: "9 / 16",
         title: "PHOTO BOOTH",
+        frame: { width: 900, height: 2700 },
         slots: [
-            { x: 0.05, y: 0.20, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.38, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.56, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.74, width: 0.90, height: 0.16 },
+            { x: 40, y: 80, width: 820, height: 560 },
+            { x: 40, y: 720, width: 820, height: 560 },
+            { x: 40, y: 1360, width: 820, height: 560 },
+            { x: 40, y: 2000, width: 820, height: 560 },
         ],
     },
     polaroid: {
@@ -36,11 +47,12 @@ export const templates: Record<
         aspectRatio: "9 / 16",
         text: "#111111",
         title: "MEMORIES",
+        frame: { width: 900, height: 2700 },
         slots: [
-            { x: 0.05, y: 0.20, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.38, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.56, width: 0.90, height: 0.16 },
-            { x: 0.05, y: 0.74, width: 0.90, height: 0.16 },
+            { x: 40, y: 80, width: 820, height: 560 },
+            { x: 40, y: 720, width: 820, height: 560 },
+            { x: 40, y: 1360, width: 820, height: 560 },
+            { x: 40, y: 2000, width: 820, height: 560 },
         ],
     },
     newspaper: {
@@ -48,73 +60,87 @@ export const templates: Record<
         text: "#1f1f1f",
         title: "NEWS PAPER",
         aspectRatio: "9 / 16",
+        frame: { width: 900, height: 2700 },
+        slots: [
+            { x: 245, y: 335, width: 600, height: 400 },
+            { x: 245, y: 755, width: 600, height: 400 },
+            { x: 245, y: 1175, width: 600, height: 400 },
+            { x: 245, y: 1600, width: 600, height: 400 },
+        ],
         frameSrc: "/NewsPaper.png",
         frameOverlay: [
             {
                 top: "0px",
-                left: "0%",
-                width: "100%",
-                height: "600px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
                 objectFit: "cover",
             },
             {
-                top: "0%",
-                left: "0%",
-                width: "100%",
-                height: "100%",
+                top: "0px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
                 objectFit: "cover",
             },
             {
-                top: "0%",
-                left: "0%",
-                width: "100%",
-                height: "100%",
+                top: "0px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
                 objectFit: "cover",
             },
             {
-                top: "0%",
-                left: "0%",
-                width: "100%",
-                height: "100%",
+                top: "0px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
                 objectFit: "cover",
             },
-        ]
+        ],
     },
     parkbogum: {
         bg: "#faf8f1",
         text: "#102c44",
         title: "PARK BOGUM",
         aspectRatio: "9 / 16",
+        frame: { width: 900, height: 2700 },
+        slots: [
+            { x: 15, y: 60, width: 830, height: 580 },
+            { x: 15, y: 690, width: 830, height: 580 },
+            { x: 15, y: 1315, width: 830, height: 580 },
+            { x: 15, y: 1942, width: 830, height: 580 },
+        ],
         frameSrc: "/ParkBoGum.png",
         frameOverlay: [
             {
-                top: "0%",
-                left: "0%",
-                width: "10%",
-                height: "10%",
-                objectFit: "cover",
-            },
-            {
-                top: "10%",
-                left: "0%",
-                width: "100%",
-                height: "10%",
-                objectFit: "cover",
-            },
-            {
-                top: "20%",
-                left: "0%",
-                width: "100%",
-                height: "20%",
-                objectFit: "cover",
-            },
-            {
-                top: "0%",
-                left: "0%",
+                top: "0px",
+                left: "0px",
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
             },
-        ]
-    }
+            {
+                top: "-100px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
+                objectFit: "cover",
+            },
+            {
+                top: "0px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
+                objectFit: "cover",
+            },
+            {
+                top: "0px",
+                left: "0px",
+                width: "900px",
+                height: "2700px",
+                objectFit: "cover",
+            },
+        ],
+    },
 };

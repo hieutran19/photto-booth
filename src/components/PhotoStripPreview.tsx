@@ -19,7 +19,7 @@ export default function PhotoStripPreview({
 }: Props) {
     if (!photoStrip) return null;
 
-    const title = layout === "strip" ? "Photo Strip" : "Photo Grid";
+    const title = "Photo Booth MVP";
     const subtitle =
         layout === "strip"
             ? "Your 4-photo strip is ready to save or share."

@@ -19,6 +19,14 @@ export default function CameraPreview({
     aspectRatio = "9 / 16",
     objectFit = "contain",
 }: Props) {
+    const resolveSize = (value: number | string | undefined) => {
+        if (value === undefined) return undefined;
+        if (typeof value === "number") {
+            return `${value}px`;
+        }
+        return value;
+    };
+
     return (
         <div
             style={{
@@ -56,10 +64,10 @@ export default function CameraPreview({
                     key={`${slot.x}-${slot.y}-${index}`}
                     style={{
                         position: "absolute",
-                        left: slot.left ?? `${slot.x * 100}%`,
-                        top: slot.top ?? `${slot.y * 100}%`,
-                        width: slot.slotWidth ?? `${slot.width * 100}%`,
-                        height: slot.slotHeight ?? `${slot.height * 100}%`,
+                        left: slot.left ?? resolveSize(slot.x),
+                        top: slot.top ?? resolveSize(slot.y),
+                        width: slot.slotWidth ?? resolveSize(slot.width),
+                        height: slot.slotHeight ?? resolveSize(slot.height),
                         border: "2px solid rgba(255,255,255,0.95)",
                         borderRadius: 8,
                         boxSizing: "border-box",
